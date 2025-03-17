@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const hiddenContentContainer = document.getElementById('hiddenContentContainer');
     const hiddenContentDisplay = document.getElementById('hiddenContentDisplay');
     const removeContentBtn = document.getElementById('removeContent');
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
 
     // Giới hạn kích thước file (10MB)
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -711,4 +713,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification('Không thể xóa nội dung ẩn: ' + error.message, 'error');
         }
     });
-}); 
+    helpBtn.addEventListener('click', function () {
+        helpModal.show();
+    });
+});
