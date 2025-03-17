@@ -73,3 +73,78 @@ Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE`
 - [Font Awesome](https://fontawesome.com/)
 - [NVISO Labs](https://blog.nviso.eu/2020/07/13/how-to-embed-secret-data-in-jpeg-files/) - Tham khảo kỹ thuật nhúng dữ
   liệu trong JPEG 
+
+## Chạy ứng dụng với Docker
+
+### Yêu cầu
+
+- Docker
+- Docker Compose
+
+### Cách chạy
+
+1. Clone repository:
+
+```bash
+git clone https://github.com/yourusername/base64-converter.git
+cd base64-converter
+```
+
+2. Xây dựng và chạy container:
+
+```bash
+docker-compose up -d
+```
+
+3. Truy cập ứng dụng tại địa chỉ: http://localhost:8081
+
+### Dừng ứng dụng
+
+```bash
+docker-compose down
+```
+
+## Chạy ứng dụng không cần Docker
+
+Nếu bạn không muốn sử dụng Docker, bạn có thể chạy ứng dụng trực tiếp:
+
+1. Clone repository:
+
+```bash
+git clone https://github.com/yourusername/base64-converter.git
+cd base64-converter
+```
+
+2. Mở file `src/index.html` trong trình duyệt web.
+
+## Hướng dẫn sử dụng
+
+### Chuyển đổi hình ảnh sang Base64
+
+1. Kéo thả hoặc nhấp vào vùng tải lên để chọn hình ảnh (JPG, PNG, GIF).
+2. Hình ảnh sẽ được chuyển đổi thành chuỗi Base64 và hiển thị trong ô kết quả.
+3. Nhấn nút "Sao chép Base64" để sao chép chuỗi vào clipboard.
+4. Nhấn nút "Đồng bộ" để sao chép chuỗi sang phần bên phải.
+
+### Nhúng nội dung ẩn
+
+1. Tải lên hình ảnh JPEG hoặc PNG.
+2. Nhập nội dung muốn ẩn vào ô "Nội dung ẩn".
+3. Nhấn nút "Nhúng nội dung" để nhúng nội dung vào hình ảnh.
+4. Chuỗi Base64 sẽ được cập nhật với nội dung đã nhúng.
+
+### Trích xuất nội dung ẩn
+
+1. Nhập chuỗi Base64 có chứa nội dung ẩn vào ô "Nhập chuỗi Base64".
+2. Nhấn nút "Trích xuất" để tìm và hiển thị nội dung ẩn.
+3. Nội dung ẩn sẽ hiển thị trong phần "Nội dung ẩn" bên dưới hình ảnh.
+
+### Xóa nội dung ẩn
+
+1. Nhập chuỗi Base64 có chứa nội dung ẩn.
+2. Nhấn nút "Xóa nội dung" để loại bỏ nội dung ẩn khỏi hình ảnh.
+3. Chuỗi Base64 sẽ được cập nhật mà không còn nội dung ẩn.
+
+## Lưu ý quan trọng
+
+Nội dung ẩn không được mã hóa và có thể bị mất nếu hình ảnh được chỉnh sửa bởi các ứng dụng khác. Không nên sử dụng để lưu trữ thông tin quan trọng.

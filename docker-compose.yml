@@ -1,0 +1,9 @@
+services:
+  base64studio:
+    build: .
+    container_name: base64studio
+    ports:
+      - "8081:80"
+    volumes:
+      - ./src:/usr/share/nginx/html
+    restart: unless-stopped
