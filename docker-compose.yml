@@ -3,7 +3,13 @@ services:
     build: .
     container_name: base64studio
     ports:
-      - "8081:80"
+      - "8081:3000"
     volumes:
-      - ./src:/usr/share/nginx/html
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
     restart: unless-stopped

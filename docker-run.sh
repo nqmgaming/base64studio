@@ -30,6 +30,7 @@ if [ $? -eq 0 ]; then
     echo "====================================="
     echo "  Base64Studio đã được khởi chạy!"
     echo "  Truy cập: http://localhost:8081"
+    echo "  Server Node.js đang chạy trên cổng 3000 trong container"
     echo "====================================="
 else
     echo "Có lỗi xảy ra khi khởi chạy container."

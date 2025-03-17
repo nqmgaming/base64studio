@@ -1,13 +1,19 @@
-FROM nginx:alpine
+FROM node:18-alpine
 
-# Sao chép các file tĩnh vào thư mục web của Nginx
-COPY src/ /usr/share/nginx/html/
+# Tạo thư mục làm việc
+WORKDIR /app
 
-# Cấu hình Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Sao chép package.json và package-lock.json
+COPY package*.json ./
 
-# Mở cổng 80
-EXPOSE 80
+# Cài đặt các phụ thuộc
+RUN npm install --production
 
-# Khởi động Nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Sao chép mã nguồn ứng dụng
+COPY . .
+
+# Mở cổng 3000
+EXPOSE 3000
+
+# Khởi động ứng dụng
+CMD ["npm", "start"] 

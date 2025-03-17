@@ -1,19 +1,28 @@
 {
-  "name": "base64-converter",
+  "name": "base64-studio",
   "version": "1.0.0",
-  "description": "Ứng dụng chuyển đổi hình ảnh sang Base64 và ngược lại",
-  "main": "server.js",
+  "description": "Công cụ chuyển đổi hình ảnh sang Base64 và nhúng nội dung ẩn",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "base64",
+    "image",
+    "converter",
+    "steganography"
+  ],
+  "author": "NQM Gaming",
+  "license": "MIT",
   "dependencies": {
+    "compression": "^1.7.4",
     "express": "^4.18.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
