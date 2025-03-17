@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Kiểm tra định dạng file
-        if (!file.type.startsWith('image/jpeg')) {
-            showNotification('Vui lòng chọn file JPEG!', 'error');
+        if (!file.type.startsWith('image/')) {
+            showNotification('Vui lòng chọn file hình ảnh hợp lệ!', 'error');
             return;
         }
 
@@ -84,13 +84,14 @@ document.addEventListener('DOMContentLoaded', function () {
             base64Output.value = e.target.result;
             base64Input.value = e.target.result;
             updateImagePreview(e.target.result);
+            updateEmbedButtonState();
 
             // Khôi phục giao diện drop zone
             dropZone.classList.remove('loading');
             dropZone.querySelector('.drop-zone-content').innerHTML = `
                 <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
-                <p>Kéo thả hình ảnh JPEG vào đây hoặc click để chọn</p>
-                <small class="text-muted">Chỉ hỗ trợ: JPEG (Tối đa 10MB)</small>
+                <p>Kéo thả hình ảnh vào đây hoặc click để chọn</p>
+                <small class="text-muted">Hỗ trợ: JPG, PNG, GIF (Tối đa 10MB)</small>
             `;
 
             showNotification('Chuyển đổi thành công!', 'success');
@@ -186,7 +187,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return false;
             }
             const base64Part = str.split(',')[1];
-            return base64Part && btoa(atob(base64Part)) === base64Part;
+            if (!base64Part) return false;
+
+            // Kiểm tra xem chuỗi có phải là Base64 hợp lệ không
+            const decoded = atob(base64Part);
+            const encoded = btoa(decoded);
+            return encoded === base64Part;
         } catch (err) {
             return false;
         }
@@ -214,6 +220,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3000);
     }
 
+    // Thêm các hàm hỗ trợ
+    function base64ToUint8Array(base64) {
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
+
+    function uint8ArrayToBase64(bytes) {
+        let binary = '';
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
+
     // Hàm nhúng nội dung vào Base64
     function embedContent(base64String, content) {
         try {
@@ -222,32 +248,46 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error('Chỉ hỗ trợ file JPEG!');
             }
 
-            // Tách phần header và data của Base64
+            // Tách header và data của Base64
             const [header, data] = base64String.split(',');
 
-            // Chuyển nội dung thành hex
-            const contentHex = Array.from(content).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+            // Giải mã Base64 thành Uint8Array
+            const bytes = base64ToUint8Array(data);
 
-            // Tạo marker comment (FF FE) với kích thước và nội dung
-            const markerSize = (contentHex.length / 2 + 2).toString(16).padStart(4, '0');
-            const marker = 'FFFE' + markerSize + contentHex;
-
-            // Chuyển marker từ hex sang Base64
-            const markerBase64 = btoa(String.fromCharCode(...marker.match(/.{1,2}/g).map(byte => parseInt(byte, 16))));
-
-            // Chèn marker vào trước FF DA (start of scan)
-            const scanMarkerIndex = data.indexOf('FFDA');
+            // Tìm vị trí FF DA (start of scan)
+            let scanMarkerIndex = -1;
+            for (let i = 0; i < bytes.length - 1; i++) {
+                if (bytes[i] === 0xFF && bytes[i + 1] === 0xDA) {
+                    scanMarkerIndex = i;
+                    break;
+                }
+            }
             if (scanMarkerIndex === -1) {
                 throw new Error('Không tìm thấy vị trí thích hợp để nhúng nội dung');
             }
 
-            const newData = data.slice(0, scanMarkerIndex) + markerBase64 + data.slice(scanMarkerIndex);
+            // Chuyển nội dung thành mảng byte
+            const contentBytes = new TextEncoder().encode(content);
 
-            // Tính toán padding
-            const paddingLength = (4 - newData.length % 4) % 4;
-            const padding = '='.repeat(paddingLength);
+            // Tạo marker comment (FF FE)
+            const marker = new Uint8Array(2 + 2 + contentBytes.length);
+            marker[0] = 0xFF; // Byte đầu của marker
+            marker[1] = 0xFE; // Byte thứ hai của marker
+            const size = contentBytes.length + 2; // Kích thước = nội dung + 2 byte kích thước
+            marker[2] = (size >> 8) & 0xFF; // Byte cao của kích thước
+            marker[3] = size & 0xFF; // Byte thấp của kích thước
+            marker.set(contentBytes, 4); // Chèn nội dung vào sau kích thước
 
-            return header + ',' + newData + padding;
+            // Chèn marker vào trước FF DA
+            const newBytes = new Uint8Array(bytes.length + marker.length);
+            newBytes.set(bytes.slice(0, scanMarkerIndex), 0);
+            newBytes.set(marker, scanMarkerIndex);
+            newBytes.set(bytes.slice(scanMarkerIndex), scanMarkerIndex + marker.length);
+
+            // Mã hóa lại thành Base64
+            const newData = uint8ArrayToBase64(newBytes);
+
+            return header + ',' + newData;
         } catch (error) {
             throw new Error('Không thể nhúng nội dung vào hình ảnh: ' + error.message);
         }
@@ -257,26 +297,40 @@ document.addEventListener('DOMContentLoaded', function () {
     function extractContent(base64String) {
         try {
             const [, data] = base64String.split(',');
+            const bytes = base64ToUint8Array(data);
 
             // Tìm marker comment (FF FE)
-            const markerIndex = data.indexOf('FFFE');
-            if (markerIndex === -1) {
-                return null;
+            for (let i = 0; i < bytes.length - 1; i++) {
+                if (bytes[i] === 0xFF && bytes[i + 1] === 0xFE) {
+                    // Đọc kích thước của marker
+                    const size = (bytes[i + 2] << 8) | bytes[i + 3];
+                    // Trích xuất nội dung
+                    const contentBytes = bytes.slice(i + 4, i + 4 + size - 2);
+                    return new TextDecoder().decode(contentBytes);
+                }
             }
-
-            // Đọc kích thước của marker
-            const sizeHex = data.slice(markerIndex + 4, markerIndex + 8);
-            const size = parseInt(sizeHex, 16);
-
-            // Đọc nội dung
-            const contentHex = data.slice(markerIndex + 8, markerIndex + 8 + (size - 2) * 2);
-            const content = String.fromCharCode(...contentHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-
-            return content;
+            return null;
         } catch (error) {
             return null;
         }
     }
+
+    // Hàm kiểm tra và cập nhật trạng thái nút embed
+    function updateEmbedButtonState() {
+        const base64String = base64Output.value;
+        const isJPEG = base64String && base64String.startsWith('data:image/jpeg');
+
+        embedContentBtn.disabled = !isJPEG;
+        if (!isJPEG) {
+            embedContentBtn.title = 'Chỉ hỗ trợ file JPEG';
+        } else {
+            embedContentBtn.title = '';
+        }
+    }
+
+    // Cập nhật trạng thái nút khi thay đổi Base64
+    base64Output.addEventListener('input', updateEmbedButtonState);
+    base64Input.addEventListener('input', updateEmbedButtonState);
 
     // Xử lý nút nhúng nội dung
     embedContentBtn.addEventListener('click', function () {
