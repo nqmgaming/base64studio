@@ -18,10 +18,8 @@ npm-debug.log
 *.swo
 
 # Logs
-logs
 *.log
 
 # Các file khác
-README.md
 LICENSE
-*.md 
+*.md

@@ -98,24 +98,12 @@ cd base64-converter
 docker-compose up -d
 ```
 
-hoặc sử dụng script:
-
-```bash
-./docker-run.sh
-```
-
 3. Truy cập ứng dụng tại địa chỉ: http://localhost:8081
 
 ### Dừng ứng dụng
 
 ```bash
 docker-compose down
-```
-
-hoặc sử dụng script:
-
-```bash
-./docker-stop.sh
 ```
 
 ## Chạy ứng dụng không cần Docker
@@ -129,25 +117,7 @@ git clone https://github.com/yourusername/base64-converter.git
 cd base64-converter
 ```
 
-2. Cài đặt các phụ thuộc:
-
-```bash
-npm install
-```
-
-3. Khởi động server:
-
-```bash
-npm start
-```
-
-hoặc chạy trong chế độ phát triển:
-
-```bash
-npm run dev
-```
-
-4. Truy cập ứng dụng tại địa chỉ: http://localhost:3000
+2. Mở file `src/index.html` trong trình duyệt web.
 
 ## Hướng dẫn sử dụng
 
